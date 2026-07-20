@@ -1,0 +1,1114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>An Adventure — Story Mission Toolkit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bangers&family=Baloo+2:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1D1B2E;
+    --paper:#FBF3E0;
+    --panel:#FFFFFF;
+    --red:#D62839;
+    --gold:#F7B32B;
+    --blue:#1B98E0;
+    --green:#2A9D6F;
+    --grey:#8A8577;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  html{ font-size:18.5px; }
+  body{
+    background-color:var(--paper);
+    background-image:radial-gradient(var(--ink) 0.6px, transparent 0.6px);
+    background-size:16px 16px;
+    background-position:-4px -4px;
+    color:var(--ink);
+    font-family:'Baloo 2', sans-serif;
+    line-height:1.5;
+    padding:20px 14px 60px;
+  }
+  .display{ font-family:'Bangers', cursive; letter-spacing:0.5px; }
+  .wrap{ max-width:920px; margin:0 auto; }
+
+  /* ---------- COVER ---------- */
+  .cover{
+    background:var(--ink);
+    color:var(--paper);
+    border:3px solid var(--ink);
+    border-radius:10px;
+    padding:26px 22px;
+    box-shadow:6px 6px 0 var(--red);
+    margin-bottom:22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .cover::after{
+    content:"";
+    position:absolute; right:-40px; top:-40px;
+    width:160px; height:160px; border-radius:50%;
+    background:radial-gradient(var(--gold) 0%, transparent 70%);
+    opacity:0.5;
+  }
+  .cover h1{
+    font-size:clamp(2.4rem, 7vw, 3.6rem);
+    margin:0 0 4px;
+    color:var(--paper);
+    text-shadow:3px 3px 0 var(--red);
+  }
+  .cover p{
+    margin:0; font-size:1.05rem; max-width:520px; color:#F0EAD8;
+  }
+  .cover .badge{
+    display:inline-block; margin-top:14px; background:var(--gold); color:var(--ink);
+    font-family:'Bangers'; font-size:1rem; padding:5px 14px; border-radius:999px;
+    border:2px solid var(--ink); transform:rotate(-3deg);
+  }
+
+  /* ---------- NAV ---------- */
+  .mission-tabs{
+    display:flex; gap:10px; margin-bottom:22px; flex-wrap:wrap;
+  }
+  .tab-btn{
+    font-family:'Bangers'; font-size:1.15rem; letter-spacing:0.5px;
+    background:var(--panel); border:3px solid var(--ink); border-radius:8px;
+    padding:10px 18px; cursor:pointer; box-shadow:4px 4px 0 var(--ink);
+    color:var(--ink); transition:transform 0.12s ease;
+  }
+  .tab-btn:hover{ transform:translate(-2px,-2px); }
+  .tab-btn.active{ background:var(--red); color:#fff; }
+  .tab-btn:focus-visible{ outline:3px solid var(--blue); outline-offset:2px; }
+
+  .panel{ display:none; }
+  .panel.active{ display:block; animation:fadeIn 0.25s ease; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:translateY(0);} }
+
+  .card{
+    background:var(--panel); border:3px solid var(--ink); border-radius:10px;
+    padding:18px 20px; margin-bottom:18px; box-shadow:5px 5px 0 var(--ink);
+  }
+  .card h2{ font-family:'Bangers'; font-size:1.6rem; margin:0 0 8px; }
+  .card h3{ font-family:'Bangers'; font-size:1.2rem; margin:14px 0 6px; }
+  .eyebrow{
+    display:inline-block; font-family:'Bangers'; font-size:0.85rem;
+    background:var(--gold); border:2px solid var(--ink); border-radius:999px;
+    padding:2px 10px; margin-bottom:8px;
+  }
+
+  /* ---------- MISSION 1: SORT ---------- */
+  /* ---------- MISSION 1: SORT GAME ---------- */
+  .game-hud{
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'Bangers'; font-size:1.15rem; margin:10px 0 6px;
+  }
+  .progress-bar{
+    height:10px; background:#EDE7D3; border:2px solid var(--ink); border-radius:6px;
+    overflow:hidden; margin-bottom:16px;
+  }
+  .progress-fill{ height:100%; background:var(--gold); width:0%; transition:width 0.3s ease; }
+  .game-wrap{ text-align:center; }
+  .game-card-stage{
+    position:relative; min-height:150px; display:flex; align-items:center;
+    justify-content:center; margin-bottom:6px;
+  }
+  .game-card{
+    background:#fff; border:3px solid var(--ink); border-radius:12px;
+    padding:20px 24px; font-size:1.1rem; font-weight:600; max-width:440px;
+    box-shadow:5px 5px 0 var(--ink); transition:transform 0.35s ease, opacity 0.35s ease;
+  }
+  .game-card.fly-right{ transform:translateX(360px) rotate(15deg); opacity:0; }
+  .game-card.fly-left{ transform:translateX(-360px) rotate(-15deg); opacity:0; }
+  .game-card.wrong-flash{ border-color:var(--red); animation:shake 0.35s; }
+  @keyframes shake{ 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
+  .game-feedback{ min-height:1.5em; font-weight:700; margin-bottom:8px; }
+  .game-buttons{ display:flex; justify-content:center; gap:16px; flex-wrap:wrap; }
+  .game-btn{
+    font-family:'Bangers'; font-size:1.05rem; padding:14px 22px; border:3px solid var(--ink);
+    border-radius:10px; cursor:pointer; box-shadow:4px 4px 0 var(--ink);
+  }
+  .game-btn.ordinary{ background:#E7EFF7; }
+  .game-btn.adventure{ background:#FFE9D6; }
+  .game-btn:hover{ transform:translate(-2px,-2px); }
+  .game-btn:disabled{ opacity:0.5; cursor:default; }
+  .ingredients-reveal{
+    display:none; background:#FFF6DE; border:2px solid var(--gold); border-radius:8px;
+    padding:12px 14px; margin-top:12px;
+  }
+  .ingredients-reveal.show{ display:block; }
+  .ingredients-reveal ul{ margin:6px 0 0; padding-left:20px; }
+
+  /* ---------- WORD CLOUD ---------- */
+  .word-cloud{ display:flex; flex-wrap:wrap; gap:12px; justify-content:center; padding:10px 0 4px; }
+  .central-badge{
+    font-family:'Bangers'; font-size:1.4rem; background:var(--red); color:#fff;
+    border:3px solid var(--ink); border-radius:50%; width:130px; height:130px;
+    display:flex; align-items:center; justify-content:center; text-align:center;
+    box-shadow:4px 4px 0 var(--ink); flex-shrink:0;
+  }
+  .chip{
+    background:#fff; border:2px solid var(--ink); border-radius:10px;
+    padding:8px 30px 8px 14px; cursor:pointer; font-weight:600; max-width:230px;
+    box-shadow:3px 3px 0 var(--ink); transition:transform 0.12s ease;
+    align-self:flex-start; position:relative;
+  }
+  .chip-audio{
+    position:absolute; top:5px; right:5px; width:22px; height:22px;
+    border-radius:50%; border:2px solid var(--ink); background:var(--gold);
+    font-size:0.72rem; line-height:1; display:flex; align-items:center;
+    justify-content:center; cursor:pointer; padding:0; box-shadow:1px 1px 0 var(--ink);
+  }
+  .chip-audio:hover{ transform:scale(1.08); }
+  .chip:nth-child(3n){ transform:rotate(-2deg); }
+  .chip:nth-child(3n+1){ transform:rotate(2deg); }
+  .chip:nth-child(3n+2){ transform:rotate(-1deg); }
+  .chip:hover{ transform:translateY(-2px) rotate(0deg); }
+  .chip .word{
+    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:1.08rem;
+    color:var(--red); text-transform:lowercase;
+    letter-spacing:0.02em; word-spacing:0.1em; line-height:1.4;
+  }
+  .chip .def{ display:none; font-size:0.85rem; margin-top:5px; font-weight:400; }
+  .chip.open .def{ display:block; }
+  .chip.open{ background:#FFF6DE; }
+
+  /* ---------- STRUCTURE CHOICE ---------- */
+  .structure-grid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  @media (max-width:600px){ .structure-grid{ grid-template-columns:1fr; } }
+  .struct-card{
+    border:2px solid var(--ink); border-radius:10px; padding:12px 14px; cursor:pointer;
+    background:#fff; box-shadow:3px 3px 0 var(--ink);
+  }
+  .struct-card.selected{ background:var(--blue); color:#fff; }
+  .struct-card h4{ font-family:'Bangers'; margin:0 0 4px; font-size:1.05rem; }
+  .struct-card p{ margin:0 0 6px; font-size:0.9rem; }
+  .struct-card em{ font-size:0.85rem; }
+  .current-choice{
+    font-size:0.95rem; background:#E7EFF7; border-left:4px solid var(--blue);
+    padding:8px 12px; border-radius:6px; margin-top:10px; display:none;
+  }
+  .current-choice.show{ display:block; }
+
+  /* ---------- PLANNING STAGES ---------- */
+  .stage{ border:2px solid var(--ink); border-radius:10px; padding:14px 16px; margin-bottom:14px; }
+  .stage-1{ background:#EAF6EC; }
+  .stage-2{ background:#FDF0E2; }
+  .stage-3{ background:#FCE9EC; }
+  .stage-head{ display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+  .stage-icon{ width:44px; height:44px; flex-shrink:0; }
+  .stage h3{ margin:0; }
+  .stage ul{ margin:4px 0 10px; padding-left:20px; font-size:0.92rem; }
+  textarea{
+    width:100%; min-height:90px; border:2px solid var(--ink); border-radius:8px;
+    padding:8px 10px; font-family:'Baloo 2'; font-size:0.95rem; resize:vertical;
+  }
+  .print-text{ display:none; white-space:pre-wrap; font-size:0.95rem; padding:8px 10px; border:2px solid var(--ink); border-radius:8px; }
+
+  .btn{
+    font-family:'Bangers'; font-size:1.05rem; background:var(--red); color:#fff;
+    border:3px solid var(--ink); border-radius:8px; padding:10px 20px; cursor:pointer;
+    box-shadow:4px 4px 0 var(--ink);
+  }
+  .btn:hover{ transform:translate(-2px,-2px); }
+  .btn.secondary{ background:var(--gold); color:var(--ink); }
+
+  /* ---------- WORD BANK ---------- */
+  .bank-group{ margin-bottom:16px; }
+  .bank-group h3{ margin-bottom:8px; }
+  .bank-chips{ display:flex; flex-wrap:wrap; gap:10px; }
+
+  /* ---------- SENTENCE BUILDER (MISSION 4) ---------- */
+  .build-label{ font-family:'Bangers'; font-size:1.1rem; margin-bottom:10px; color:var(--red); }
+  .story-tabs{ display:flex; flex-wrap:wrap; gap:8px; margin-bottom:16px; }
+  .story-tab-btn{
+    font-family:'Bangers'; font-size:0.95rem; background:#fff; border:2px solid var(--ink);
+    border-radius:8px; padding:7px 14px; cursor:pointer; box-shadow:2px 2px 0 var(--ink);
+  }
+  .story-tab-btn.active{ background:var(--blue); color:#fff; }
+  .sentence-nav{ margin-bottom:18px; }
+  .nav-stage{ margin-bottom:10px; }
+  .nav-stage-title{
+    font-family:'Bangers'; font-size:0.95rem; margin-bottom:5px;
+    display:flex; align-items:center; gap:6px;
+  }
+  .nav-numbers{ display:flex; flex-wrap:wrap; gap:7px; }
+  .nav-num{
+    width:34px; height:34px; border-radius:50%; border:2px solid var(--ink);
+    background:#fff; font-family:'Bangers'; font-size:1rem; cursor:pointer;
+    display:flex; align-items:center; justify-content:center; box-shadow:2px 2px 0 var(--ink);
+    flex-shrink:0;
+  }
+  .nav-num.active{ background:var(--blue); color:#fff; }
+  .nav-num.solved{ background:var(--green); color:#fff; }
+  .build-complete{
+    display:none; background:#FFF6DE; border:2px solid var(--gold); border-radius:10px;
+    padding:14px 16px; margin-bottom:16px;
+  }
+  .build-complete.show{ display:block; }
+  .tile-zone{
+    border:3px dashed var(--ink); border-radius:10px; min-height:60px;
+    padding:12px; display:flex; flex-wrap:wrap; gap:8px; align-items:flex-start;
+    margin-bottom:14px;
+  }
+  .tile-zone.bank{ background:#F0EEE4; }
+  .tile-zone.drop{ background:#FFF6DE; }
+  .tile{
+    background:#fff; border:2px solid var(--ink); border-radius:8px;
+    padding:7px 13px; cursor:pointer; font-weight:700; box-shadow:2px 2px 0 var(--ink);
+    user-select:none;
+  }
+  .tile:hover{ transform:translateY(-1px); }
+  .build-hint{ min-height:1.3em; font-size:0.92rem; margin-bottom:10px; }
+  .build-preview{
+    background:#EAF6EC; border:2px solid var(--green); border-radius:8px;
+    padding:10px 14px; font-size:0.95rem;
+  }
+  .preview-stage-label{ font-family:'Bangers'; font-size:0.85rem; margin:8px 0 2px; }
+  .preview-stage-label:first-child{ margin-top:0; }
+  .preview-sentence{ margin:0 0 4px; }
+  .preview-placeholder{ color:var(--grey); font-style:italic; }
+  .build-finished{
+    background:#FFF6DE; border:2px solid var(--gold); border-radius:10px; padding:16px;
+  }
+
+  /* ---------- APPLY IT: CLOZE ACTIVITY ---------- */
+  .cloze-paragraph{ line-height:2.4; font-size:1.05rem; margin:12px 0; }
+  .blank{
+    display:inline-block; min-width:120px; border-bottom:3px solid var(--ink);
+    text-align:center; font-weight:700; color:var(--red); cursor:pointer;
+    padding:2px 6px; margin:0 2px;
+  }
+  .blank.correct{ color:var(--green); border-color:var(--green); }
+  .blank.incorrect{ color:var(--red); border-color:var(--red); background:#FCE9EC; border-radius:4px; }
+  .blank.selected{ background:#DCEEFB; border-color:var(--blue); border-radius:4px; box-shadow:0 0 0 2px var(--blue); }
+  .apply-bank{ display:flex; flex-wrap:wrap; gap:10px; margin:12px 0; }
+  .apply-chip{
+    background:#fff; border:2px solid var(--ink); border-radius:8px;
+    padding:7px 13px; cursor:pointer; font-weight:700; box-shadow:2px 2px 0 var(--ink);
+    user-select:none;
+  }
+  .apply-chip.used{ opacity:0.3; pointer-events:none; box-shadow:none; }
+  .apply-hint{ min-height:1.3em; font-size:0.92rem; margin-top:6px; }
+  .apply-success{
+    display:none; background:#EAF6EC; border:2px solid var(--green); border-radius:8px;
+    padding:12px 14px; margin-top:10px;
+  }
+  .apply-success.show{ display:block; }
+
+  .prompter{
+    background:#FFF6DE; border:2px dashed var(--ink); border-radius:10px;
+    padding:14px 16px; margin-top:18px; display:flex; align-items:center;
+    justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+  .prompter p{ margin:0; font-weight:700; flex:1; min-width:200px; }
+  .prompter-btns{ display:flex; gap:8px; flex-wrap:wrap; }
+
+  footer{ text-align:center; font-size:0.85rem; color:var(--grey); margin-top:26px; }
+
+  @media print{
+    .mission-tabs, .btn, header.cover .badge{ display:none !important; }
+    .panel{ display:block !important; }
+    textarea{ display:none; }
+    .print-text{ display:block !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="cover">
+    <h1 class="display">AN ADVENTURE</h1>
+    <p>A story mission toolkit for building your best playground adventure — one panel at a time.</p>
+    <span class="badge">P4 COMPOSITION TOOLKIT</span>
+  </header>
+
+  <nav class="mission-tabs">
+    <button class="tab-btn active" data-target="mission1">MISSION 1: ADVENTURE BRAIN</button>
+    <button class="tab-btn" data-target="mission3">MISSION 3: HERO WORDS</button>
+    <button class="tab-btn" data-target="mission4">MISSION 4: BUILD A STORY</button>
+  </nav>
+
+  <!-- ================= MISSION 1 ================= -->
+  <section id="mission1" class="panel active">
+    <div class="card">
+      <span class="eyebrow">STEP 1</span>
+      <h2>Adventure... or Just an Ordinary Day?</h2>
+      <p>Not every trip to the playground is an adventure. Read each card fast and tap the right button before it's gone. Watch your hearts — three wrong answers and you'll need to try again!</p>
+
+      <div class="game-hud">
+        <div class="hud-item">❤️ <span id="gameLives">3</span></div>
+        <div class="hud-item">Card <span id="gameProgress">1</span>/8</div>
+        <div class="hud-item">⭐ <span id="gameScore">0</span></div>
+      </div>
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+      <div class="game-wrap" id="sortGame">
+        <div class="game-card-stage">
+          <div class="game-card" id="gameCard"></div>
+        </div>
+        <p class="game-feedback" id="gameFeedback"></p>
+        <div class="game-buttons">
+          <button class="game-btn ordinary" id="btnOrdinary">🕒 ORDINARY DAY</button>
+          <button class="game-btn adventure" id="btnAdventure">⚡ ADVENTURE!</button>
+        </div>
+      </div>
+
+      <div class="ingredients-reveal" id="ingredientsReveal">
+        <p class="display" style="font-size:1.3rem; margin:0 0 6px; color:var(--red);">Final Score: <span id="gameFinalScore">0</span> &nbsp; <span id="gameStars"></span></p>
+        <strong>You found the three ingredients of an adventure:</strong>
+        <ul>
+          <li><strong>Something UNEXPECTED</strong> happens — it interrupts an ordinary moment.</li>
+          <li>The character needs a moment of <strong>COURAGE</strong> to face it.</li>
+          <li>The character is a little <strong>CHANGED</strong> by the end.</li>
+        </ul>
+        <p>Think back to <em>Dinosaurs Exist</em> — it follows exactly this path: ordinary start → unexpected discovery → a brave decision → a changed character. Your story about the playground can follow the same path.</p>
+        <button class="btn secondary" id="playAgainBtn" style="margin-top:8px;">🔄 PLAY AGAIN</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="eyebrow">STEP 2</span>
+      <h2>Build Your Adventure Word Web</h2>
+      <p>Tap a word bubble to see what it means and how to use it in your story.</p>
+      <div class="word-cloud">
+        <div class="central-badge">ADVENTURE</div>
+        <div class="chip" data-w="curious"><div class="word">curious</div><div class="def">Wanting to know more. <br><em>"I was too curious to walk away."</em></div></div>
+        <div class="chip" data-w="mysterious"><div class="word">mysterious</div><div class="def">Strange and hard to explain. <br><em>"A mysterious shadow moved across the sandpit."</em></div></div>
+        <div class="chip" data-w="unexpected"><div class="word">unexpected</div><div class="def">Not what you thought would happen. <br><em>"What happened next was completely unexpected."</em></div></div>
+        <div class="chip" data-w="cautiously"><div class="word">cautiously</div><div class="def">Carefully, because something feels uncertain. <br><em>"I stepped forward cautiously."</em></div></div>
+        <div class="chip" data-w="courage"><div class="word">courage</div><div class="def">Being brave even when you're scared. <br><em>"It took all my courage to look."</em></div></div>
+        <div class="chip" data-w="discover"><div class="word">discover</div><div class="def">To find something for the first time. <br><em>"That was how I discovered the truth."</em></div></div>
+        <div class="chip" data-w="astonished"><div class="word">astonished</div><div class="def">Very, very surprised. <br><em>"I stood there, astonished."</em></div></div>
+        <div class="chip" data-w="heart-pounding"><div class="word">heart was pounding</div><div class="def">Your heart beats fast and hard when you're nervous or scared. <br><em>"My heart was pounding as I crept closer."</em></div></div>
+        <div class="chip" data-w="held-breath"><div class="word">held my breath</div><div class="def">Stopped breathing for a moment, from fear or excitement. <br><em>"I held my breath and waited."</em></div></div>
+        <div class="chip" data-w="goosebumps"><div class="word">goosebumps prickled</div><div class="def">Tiny bumps rise on your skin when you're scared or cold. <br><em>"Goosebumps prickled along my arms."</em></div></div>
+        <div class="chip" data-w="rooted"><div class="word">rooted to the spot</div><div class="def">So shocked or afraid that you cannot move at all. <br><em>"I was rooted to the spot, unable to move."</em></div></div>
+        <div class="chip" data-w="chills"><div class="word">chills ran down my spine</div><div class="def">A cold, tingling feeling of fear moving down your back. <br><em>"Chills ran down my spine at the sound."</em></div></div>
+        <div class="chip" data-w="eyes-widened"><div class="word">my eyes widened</div><div class="def">Your eyes open wide with surprise or fear. <br><em>"My eyes widened in disbelief."</em></div></div>
+        <div class="chip" data-w="corner-of-eye"><div class="word">out of the corner of my eye</div><div class="def">Seeing something to the side, without turning to look directly. <br><em>"Out of the corner of my eye, something moved."</em></div></div>
+        <div class="chip" data-w="jaw-dropped"><div class="word">my jaw dropped</div><div class="def">Your mouth falls open with shock or amazement. <br><em>"My jaw dropped when I saw what was underneath."</em></div></div>
+        <div class="chip" data-w="stomach-lurched"><div class="word">my stomach lurched</div><div class="def">A sudden sick, swooping feeling when something scares or shocks you. <br><em>"My stomach lurched as the shadow moved again."</em></div></div>
+        <div class="chip" data-w="crept-closer"><div class="word">crept closer</div><div class="def">Moved slowly and quietly, often out of caution. <br><em>"I crept closer, hardly daring to breathe."</em></div></div>
+        <div class="chip" data-w="couldnt-believe"><div class="word">I couldn't believe my eyes</div><div class="def">A way to say something was so surprising it seemed unreal. <br><em>"I couldn't believe my eyes when I looked closer."</em></div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="eyebrow">STEP 3 — APPLY IT</span>
+      <h2>Fill In the Blanks (Round 1)</h2>
+      <p>Now use the words and phrases from your word web. Tap any blank to choose it (or skip straight to a chip to fill the next empty one), then tap a chip to fill it — you can answer the blanks in any order. Tap a filled blank to send the word back.</p>
+
+      <p class="cloze-paragraph" id="clozeParagraph">
+        That afternoon, I felt strangely <span class="blank" data-idx="0" data-answer="curious">_____</span> — as if today's adventure might be different.
+        <span class="blank" data-idx="1" data-answer="out of the corner of my eye">_____</span>, I noticed a strange shape near the sandpit.
+        I froze, <span class="blank" data-idx="2" data-answer="goosebumps prickled">_____</span> along my arms.
+        <span class="blank" data-idx="3" data-answer="my heart was pounding">_____</span> as I stepped nearer, and I had to find my
+        <span class="blank" data-idx="4" data-answer="courage">_____</span> to keep going.
+        When I finally saw what it was, <span class="blank" data-idx="5" data-answer="i couldn't believe my eyes">_____</span> — it was only a kite tangled in the tree!
+      </p>
+
+      <div class="apply-bank" id="applyBank"></div>
+      <button class="btn" id="applyCheckBtn">CHECK MY ANSWERS</button>
+      <p class="apply-hint" id="applyHint"></p>
+      <div class="apply-success" id="applySuccess">
+        <strong>Nice work!</strong> You've just used suspense and courage vocabulary the same way real writers do — building tension before a reveal, then showing how the character feels. Try weaving one or two of these into your own "An Adventure" composition.
+      </div>
+    </div>
+
+    <div class="card">
+      <span class="eyebrow">STEP 3 — APPLY IT</span>
+      <h2>Fill In the Blanks (Round 2)</h2>
+      <p>Here's a second scene using the rest of the word web — the words you haven't practised yet. Same rules: tap a blank, then tap a chip, in any order you like.</p>
+
+      <p class="cloze-paragraph" id="clozeParagraph2">
+        The classroom felt strangely <span class="blank" data-idx="0" data-answer="mysterious">_____</span> as I packed up my bag.
+        Then, completely <span class="blank" data-idx="1" data-answer="unexpected">_____</span>, I heard a soft thump from the store room.
+        <span class="blank" data-idx="2" data-answer="cautiously">_____</span>, I peeked around the door.
+        <span class="blank" data-idx="3" data-answer="my stomach lurched">_____</span> when I saw a shadow move inside.
+        I <span class="blank" data-idx="4" data-answer="held my breath">_____</span>, <span class="blank" data-idx="5" data-answer="rooted to the spot">_____</span>, too afraid to move.
+        <span class="blank" data-idx="6" data-answer="chills ran down my spine">_____</span> as the door creaked open on its own.
+        <span class="blank" data-idx="7" data-answer="my eyes widened">_____</span> and <span class="blank" data-idx="8" data-answer="my jaw dropped">_____</span> when I finally saw what was hiding behind the boxes.
+        I <span class="blank" data-idx="9" data-answer="crept closer">_____</span>, determined to <span class="blank" data-idx="10" data-answer="discover">_____</span> the truth — and what I found left me completely <span class="blank" data-idx="11" data-answer="astonished">_____</span>.
+      </p>
+
+      <div class="apply-bank" id="applyBank2"></div>
+      <button class="btn" id="applyCheckBtn2">CHECK MY ANSWERS</button>
+      <p class="apply-hint" id="applyHint2"></p>
+      <div class="apply-success" id="applySuccess2">
+        <strong>Nice work!</strong> You've now practised all 18 words and phrases from your word web. That's a full toolkit of suspense, courage, and reaction vocabulary ready for your own composition.
+      </div>
+    </div>
+
+    <div class="prompter" id="mission1Complete" style="display:none;">
+      <p>👉 You've completed Mission 1! Ready for more hero vocabulary?</p>
+      <div class="prompter-btns"><button class="btn" id="toMission2Btn">GO TO MISSION 3 →</button></div>
+    </div>
+  </section>
+
+  <!-- ================= MISSION 3 ================= -->
+  <section id="mission3" class="panel">
+    <div class="card">
+      <span class="eyebrow">WORD BANK</span>
+      <h2>Hero Words for Every Panel</h2>
+      <p>Tap a word to see its meaning and a sentence starter. Use these to lift your writing beyond "I saw" and "I was scared."</p>
+
+      <div class="bank-group">
+        <h3>🕒 Ordinary → Suspense words</h3>
+        <div class="bank-chips">
+          <div class="chip" data-w="rustling"><div class="word">rustling</div><div class="def">A soft, dry sound like leaves moving. <br><em>"A rustling came from behind the bushes."</em></div></div>
+          <div class="chip" data-w="flickered"><div class="word">flickered</div><div class="def">Moved unsteadily, on and off. <br><em>"A shadow flickered across the wall."</em></div></div>
+          <div class="chip" data-w="froze"><div class="word">froze</div><div class="def">Stopped moving completely, from shock or fear. <br><em>"I froze on the spot."</em></div></div>
+          <div class="chip" data-w="peculiar"><div class="word">peculiar</div><div class="def">Strange in an unusual way. <br><em>"There was a peculiar glow under the slide."</em></div></div>
+        </div>
+      </div>
+
+      <div class="bank-group">
+        <h3>💪 Courage words</h3>
+        <div class="bank-chips">
+          <div class="chip" data-w="steadied"><div class="word">steadied</div><div class="def">Made calm and firm after being shaky. <br><em>"I steadied my breathing and stepped closer."</em></div></div>
+          <div class="chip" data-w="clenched"><div class="word">clenched</div><div class="def">Tightened, often the fists or jaw, in determination. <br><em>"I clenched my fists and walked forward."</em></div></div>
+          <div class="chip" data-w="mustered"><div class="word">mustered</div><div class="def">Gathered up, especially courage. <br><em>"I mustered every bit of courage I had."</em></div></div>
+          <div class="chip" data-w="determined"><div class="word">determined</div><div class="def">Firmly decided, not giving up. <br><em>"Determined, I reached out my hand."</em></div></div>
+        </div>
+      </div>
+
+      <div class="bank-group">
+        <h3>🎉 Transformation / ending words</h3>
+        <div class="bank-chips">
+          <div class="chip" data-w="triumphant"><div class="word">triumphant</div><div class="def">Feeling like a winner after success. <br><em>"I walked home feeling triumphant."</em></div></div>
+          <div class="chip" data-w="relief"><div class="word">relief</div><div class="def">The calm feeling after worry ends. <br><em>"Relief washed over me."</em></div></div>
+          <div class="chip" data-w="unforgettable"><div class="word">unforgettable</div><div class="def">So special it can never be forgotten. <br><em>"It had been an unforgettable afternoon."</em></div></div>
+          <div class="chip" data-w="glowed"><div class="word">glowed</div><div class="def">Shone softly, often used for pride. <br><em>"I glowed with pride all the way home."</em></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="prompter">
+      <p>👉 Ready to see these words used in real sentences?</p>
+      <div class="prompter-btns"><button class="btn" id="toMission4BtnFromM3">MISSION 4: BUILD A STORY →</button></div>
+    </div>
+  </section>
+
+  <!-- ================= MISSION 4 ================= -->
+  <section id="mission4" class="panel">
+    <div class="card">
+      <span class="eyebrow">SENTENCE BUILDER</span>
+      <h2>Build a Model Adventure, One Sentence at a Time</h2>
+      <p>This model story follows five parts, just like your storybuilder. Tap any sentence number below to jump straight to it — you don't have to go in order. Tap the phrase tiles to build the sentence, and tap a placed tile to send it back.</p>
+
+      <div class="story-tabs" id="storyTabs"></div>
+
+      <div class="sentence-nav" id="sentenceNav"></div>
+
+      <div class="build-complete" id="buildComplete">
+        <p class="display" style="font-size:1.3rem; margin:0 0 8px; color:var(--red);">⭐ You built the whole story!</p>
+        <p style="margin:0 0 12px;">Notice how each part — the ordinary start, the rising tension, the brave decision, and the changed feeling at the end — works together. Try borrowing some of this story's words and structure for your own "An Adventure" composition.</p>
+        <div class="prompter-btns" style="margin-bottom:14px;">
+          <button class="btn secondary" id="listenBtn">🔊 LISTEN TO THE STORY</button>
+          <button class="btn secondary" id="stopListenBtn">⏹ STOP</button>
+        </div>
+        <div class="prompter" style="margin-top:0;">
+          <p>👉 Ready for more? Try the other story above, or head to Mission 3 for more hero vocabulary.</p>
+          <div class="prompter-btns"><button class="btn" id="toMission2BtnFromM4">GO TO MISSION 3 →</button></div>
+        </div>
+      </div>
+
+      <div id="buildArea">
+        <p class="build-label" id="buildStageLabel"></p>
+        <p class="build-hint" id="buildHint"></p>
+        <div id="tileArea">
+          <div class="tile-zone drop" id="buildDrop"></div>
+          <div class="tile-zone bank" id="buildBank"></div>
+        </div>
+        <div class="prompter-btns">
+          <button class="btn secondary" id="buildCheckBtn">CHECK MY SENTENCE</button>
+          <button class="btn secondary" id="showAnswerBtn" style="display:none;">💡 SHOW ANSWER</button>
+        </div>
+      </div>
+
+      <h3>Story So Far</h3>
+      <div class="build-preview" id="buildPreview"></div>
+    </div>
+  </section>
+
+  <footer>Made for P4 English — parallel narrative writing based on <em>Dinosaurs Exist</em></footer>
+</div>
+
+<script>
+  // ---------- TAB NAV ----------
+  function goToMission(id){
+    if('speechSynthesis' in window){ window.speechSynthesis.cancel(); }
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.target === id));
+    document.querySelectorAll('.panel').forEach(p => p.classList.toggle('active', p.id === id));
+    document.getElementById(id).scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if('speechSynthesis' in window){ window.speechSynthesis.cancel(); }
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById(btn.dataset.target).classList.add('active');
+    });
+  });
+
+  // ---------- CHIP EXPAND (word web + word bank) ----------
+  document.querySelectorAll('.chip').forEach(chip=>{
+    chip.addEventListener('click', ()=> chip.classList.toggle('open'));
+  });
+
+  // ---------- CHIP LISTEN BUTTONS (word web + word bank) ----------
+  document.querySelectorAll('.chip').forEach(chip => {
+    const wordEl = chip.querySelector('.word');
+    const defEl = chip.querySelector('.def');
+    if(!wordEl) return;
+    const audioBtn = document.createElement('button');
+    audioBtn.className = 'chip-audio';
+    audioBtn.type = 'button';
+    audioBtn.setAttribute('aria-label', 'Listen to this word');
+    audioBtn.textContent = '🔊';
+    audioBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if(!('speechSynthesis' in window)) return;
+      const defText = defEl ? defEl.textContent.replace(/\s+/g, ' ').trim() : '';
+      const utter = new SpeechSynthesisUtterance(wordEl.textContent + '. ' + defText);
+      utter.rate = 0.9;
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utter);
+    });
+    chip.insertBefore(audioBtn, chip.firstChild);
+  });
+
+  // ---------- MISSION 1: SORT GAME ----------
+  const storyCards = [
+    {text:"I walked to the playground and went straight home.", answer:"ordinary"},
+    {text:"I found strange footprints leading behind the slide.", answer:"adventure"},
+    {text:"I had recess and ate my sandwich.", answer:"ordinary"},
+    {text:"A mysterious rustling came from the bushes, and I had to decide whether to look.", answer:"adventure"},
+    {text:"I queued for the swing, and then it was my turn.", answer:"ordinary"},
+    {text:"I discovered a hidden door under the staircase that no one had noticed before.", answer:"adventure"},
+    {text:"The teacher called us back to class after recess.", answer:"ordinary"},
+    {text:"I had to be brave and open the mysterious box, even though my hands were shaking.", answer:"adventure"}
+  ];
+
+  function shuffleArrGlobal(arr){
+    for(let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  let gameOrder = [];
+  let gameIndex = 0;
+  let lives = 3;
+  let score = 0;
+  let answering = false;
+
+  function updateHud(){
+    document.getElementById('gameLives').textContent = lives;
+    document.getElementById('gameScore').textContent = score;
+    document.getElementById('gameProgress').textContent = Math.min(gameIndex + 1, storyCards.length);
+    document.getElementById('progressFill').style.width = (gameIndex / storyCards.length * 100) + '%';
+  }
+
+  function showCard(){
+    const card = storyCards[gameOrder[gameIndex]];
+    const el = document.getElementById('gameCard');
+    el.className = 'game-card';
+    el.textContent = card.text;
+    document.getElementById('gameFeedback').textContent = '';
+    document.getElementById('btnOrdinary').disabled = false;
+    document.getElementById('btnAdventure').disabled = false;
+    answering = false;
+    updateHud();
+  }
+
+  function answerCard(choice){
+    if(answering) return;
+    answering = true;
+    const card = storyCards[gameOrder[gameIndex]];
+    const el = document.getElementById('gameCard');
+    const feedback = document.getElementById('gameFeedback');
+    document.getElementById('btnOrdinary').disabled = true;
+    document.getElementById('btnAdventure').disabled = true;
+    const correct = choice === card.answer;
+
+    if(correct){
+      score += 10;
+      feedback.style.color = 'var(--green)';
+      feedback.textContent = '✓ Correct!';
+      el.classList.add(choice === 'adventure' ? 'fly-right' : 'fly-left');
+    } else {
+      lives -= 1;
+      feedback.style.color = 'var(--red)';
+      feedback.textContent = `Not quite — that was ${card.answer === 'adventure' ? 'an Adventure!' : 'an Ordinary Day.'}`;
+      el.classList.add('wrong-flash');
+    }
+    updateHud();
+
+    setTimeout(() => {
+      gameIndex++;
+      if(lives <= 0 || gameIndex >= gameOrder.length){
+        endGame();
+      } else {
+        showCard();
+      }
+    }, correct ? 650 : 1300);
+  }
+
+  function endGame(){
+    document.getElementById('sortGame').style.display = 'none';
+    document.getElementById('progressFill').style.width = '100%';
+    const reveal = document.getElementById('ingredientsReveal');
+    reveal.classList.add('show');
+    document.getElementById('gameFinalScore').textContent = score;
+    const stars = Math.max(0, lives);
+    document.getElementById('gameStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3 - stars);
+  }
+
+  function startGame(){
+    gameOrder = shuffleArrGlobal(storyCards.map((c, i) => i));
+    gameIndex = 0; lives = 3; score = 0;
+    document.getElementById('ingredientsReveal').classList.remove('show');
+    document.getElementById('sortGame').style.display = 'block';
+    showCard();
+  }
+
+  document.getElementById('btnOrdinary').addEventListener('click', () => answerCard('ordinary'));
+  document.getElementById('btnAdventure').addEventListener('click', () => answerCard('adventure'));
+  document.getElementById('playAgainBtn').addEventListener('click', startGame);
+
+  startGame();
+
+  // ---------- STRUCTURE CHOICE ----------
+  const currentChoice = document.getElementById('currentChoice');
+  document.querySelectorAll('.struct-card').forEach(card=>{
+    card.addEventListener('click', ()=>{
+      document.querySelectorAll('.struct-card').forEach(c=>c.classList.remove('selected'));
+      card.classList.add('selected');
+      currentChoice.textContent = 'My chosen structure: ' + card.dataset.name;
+      currentChoice.classList.add('show');
+    });
+  });
+
+  // ---------- APPLY IT: CLOZE ACTIVITY ----------
+  function setupCloze(paragraphId, bankId, checkBtnId, hintId, successId, chipTexts, onAllCorrect){
+    const container = document.getElementById(paragraphId);
+    const getBlanks = () => Array.from(container.querySelectorAll('.blank'));
+    const bank = document.getElementById(bankId);
+    const chipMap = new Map();
+    let selected = null;
+
+    shuffleArr(chipTexts.slice()).forEach(text => {
+      const chip = document.createElement('span');
+      chip.className = 'apply-chip';
+      chip.textContent = text;
+      chip.addEventListener('click', () => {
+        if(chip.classList.contains('used')) return;
+        const blanks = getBlanks();
+        const target = (selected && selected.textContent.trim() === '_____')
+          ? selected
+          : blanks.find(b => b.textContent.trim() === '_____');
+        if(!target){ return; }
+        target.textContent = text;
+        target.classList.remove('correct', 'incorrect');
+        chip.classList.add('used');
+        chipMap.set(target, chip);
+        if(target === selected){
+          target.classList.remove('selected');
+          selected = null;
+        }
+      });
+      bank.appendChild(chip);
+    });
+
+    getBlanks().forEach(blank => {
+      blank.addEventListener('click', () => {
+        if(blank.textContent.trim() === '_____'){
+          if(selected && selected !== blank){ selected.classList.remove('selected'); }
+          if(selected === blank){
+            blank.classList.remove('selected');
+            selected = null;
+          } else {
+            blank.classList.add('selected');
+            selected = blank;
+          }
+          return;
+        }
+        const chip = chipMap.get(blank);
+        if(chip){ chip.classList.remove('used'); }
+        chipMap.delete(blank);
+        blank.textContent = '_____';
+        blank.classList.remove('correct', 'incorrect');
+      });
+    });
+
+    document.getElementById(checkBtnId).addEventListener('click', () => {
+      const blanks = getBlanks();
+      let correctCount = 0, filledCount = 0;
+      blanks.forEach(b => {
+        const given = b.textContent.trim().toLowerCase();
+        if(given === '_____') return;
+        filledCount++;
+        if(given === b.dataset.answer.toLowerCase()){
+          b.classList.add('correct'); b.classList.remove('incorrect'); correctCount++;
+        } else {
+          b.classList.add('incorrect'); b.classList.remove('correct');
+        }
+      });
+      const hint = document.getElementById(hintId);
+      const success = document.getElementById(successId);
+      if(filledCount < blanks.length){
+        hint.style.color = 'var(--red)';
+        hint.textContent = `Fill in all the blanks first — ${blanks.length - filledCount} left to go.`;
+        success.classList.remove('show');
+      } else if(correctCount === blanks.length){
+        hint.style.color = 'var(--green)';
+        hint.textContent = `All ${blanks.length} correct!`;
+        success.classList.add('show');
+        if(typeof onAllCorrect === 'function'){ onAllCorrect(); }
+      } else {
+        hint.style.color = 'var(--red)';
+        hint.textContent = `${correctCount} of ${blanks.length} correct — check the red blanks and try again.`;
+        success.classList.remove('show');
+      }
+    });
+  }
+
+  let cloze1Done = false, cloze2Done = false;
+  function maybeShowMission1Complete(){
+    if(cloze1Done && cloze2Done){
+      document.getElementById('mission1Complete').style.display = 'flex';
+    }
+  }
+
+  setupCloze('clozeParagraph', 'applyBank', 'applyCheckBtn', 'applyHint', 'applySuccess', [
+    "curious",
+    "Out of the corner of my eye",
+    "goosebumps prickled",
+    "My heart was pounding",
+    "courage",
+    "I couldn't believe my eyes"
+  ], () => { cloze1Done = true; maybeShowMission1Complete(); });
+
+  setupCloze('clozeParagraph2', 'applyBank2', 'applyCheckBtn2', 'applyHint2', 'applySuccess2', [
+    "mysterious",
+    "unexpected",
+    "Cautiously",
+    "My stomach lurched",
+    "held my breath",
+    "rooted to the spot",
+    "Chills ran down my spine",
+    "My eyes widened",
+    "my jaw dropped",
+    "crept closer",
+    "discover",
+    "astonished"
+  ], () => { cloze2Done = true; maybeShowMission1Complete(); });
+
+  document.getElementById('toMission2Btn').addEventListener('click', () => goToMission('mission3'));
+  document.getElementById('toMission4BtnFromM3').addEventListener('click', () => goToMission('mission4'));
+
+  // ---------- MISSION 4: SENTENCE BUILDER ----------
+  const storiesData = [
+    { title:"Story 1: The Playground Kitten", stages:[
+        { icon:"🌅", name:"Orientation", color:"#1B98E0", sentences:[
+            ["After school,","I raced","to the playground,","hoping to have","the whole place","to myself","for once."],
+            ["The afternoon","was quiet,","and golden sunlight","streamed through","the leaves,","making patterns","on the sandy ground."],
+            ["I dropped my bag","by the bench","and climbed onto","my favourite swing,","ready for","a peaceful hour","of daydreaming."]
+          ]
+        },
+        { icon:"⚡", name:"Rising Action", color:"#F7B32B", sentences:[
+            ["Suddenly,","a strange rustling","came from","behind the slide,","and my heart","was pounding","before I even","turned around."],
+            ["I froze","for a moment,","wondering if","it was just","the wind","playing tricks","on me again."],
+            ["Curiosity got","the better of me,","and I crept closer,","hardly daring","to breathe."],
+            ["That was when","I saw","two glowing eyes","staring back at me","from the shadows","beneath the slide."]
+          ]
+        },
+        { icon:"🔥", name:"Climax", color:"#D62839", sentences:[
+            ["My mind raced","through every possibility,","from a stray cat","to something","far stranger."],
+            ["I clenched my fists,","mustered my courage,","and stepped forward","to look closer,","even though","my legs felt shaky."],
+            ["Slowly,","I reached out","a trembling hand","toward the darkness."]
+          ]
+        },
+        { icon:"🌤️", name:"Falling Action", color:"#2A9D6F", sentences:[
+            ["It was only","a lost kitten,","its fur damp","and its eyes wide","with fright."],
+            ["Relief washed","over me","as I realised","there was nothing","to be afraid of","after all."],
+            ["I scooped it up gently,","wrapping it","in my jacket","to keep it warm."],
+            ["Together,","we walked","to the school office,","where a kind teacher","promised to help","find its owner."]
+          ]
+        },
+        { icon:"🌈", name:"Conclusion", color:"#8E44AD", sentences:[
+            ["Walking home","that afternoon,","I felt like","a real superhero,","even without a cape."],
+            ["It had been","an unforgettable adventure,","and I couldn't wait","to tell my family","all about it."]
+          ]
+        }
+      ]
+    },
+    { title:"Story 2: The Wandering Puppy", stages:[
+        { icon:"🌅", name:"Orientation", color:"#1B98E0", sentences:[
+            ["On Saturday morning,","I grabbed my bicycle","and cycled straight","to the playground","near my block,","eager for","some fresh air."],
+            ["The sky was bright blue,","and I could hear","children laughing","near the swings","as I rode past","the gate."],
+            ["I parked my bicycle","by the railing","and decided to take","a slow walk","around the park","before heading home."]
+          ]
+        },
+        { icon:"⚡", name:"Rising Action", color:"#F7B32B", sentences:[
+            ["As I strolled past","the drain nearby,","I heard","a soft whimpering sound","that stopped me","in my tracks."],
+            ["At first,","I thought it might","just be the wind","rustling through","the bushes."],
+            ["But the whimpering","grew louder,","and my stomach lurched","as I realised","something was truly","in trouble."],
+            ["I peered inside","the drain","and saw","a small, trembling puppy","trapped between","the metal bars."]
+          ]
+        },
+        { icon:"🔥", name:"Climax", color:"#D62839", sentences:[
+            ["My heart was pounding","as I wondered","how on earth","I could reach it."],
+            ["Without thinking twice,","I lay flat on the ground","and reached my arm","into the narrow gap."],
+            ["The metal bars","scraped against my skin,","but I gritted my teeth","and pushed forward","anyway."]
+          ]
+        },
+        { icon:"🌤️", name:"Falling Action", color:"#2A9D6F", sentences:[
+            ["My fingers finally touched","soft fur,","and I gently pulled","the shivering puppy","free."],
+            ["It licked my hand gratefully","as I wrapped it","in my jacket","to keep it warm."],
+            ["I could feel","its little heart racing","against my palm","as it slowly began","to calm down."],
+            ["Together,","we walked back","to my block,","where my mother helped me","find a bowl of warm milk","for it."]
+          ]
+        },
+        { icon:"🌈", name:"Conclusion", color:"#8E44AD", sentences:[
+            ["Carrying the puppy home","that afternoon,","I felt every bit","as brave as","a real superhero."],
+            ["It had been","an unforgettable Saturday,","and I knew I would","remember that little puppy","for a very long time."]
+          ]
+        }
+      ]
+    }
+  ];
+
+  // Build per-story state: flattened sentence list + its own progress tracking
+  storiesData.forEach(story => {
+    story.allSentences = [];
+    story.stages.forEach((stage, stageIdx) => {
+      stage.sentences.forEach(chunks => {
+        story.allSentences.push({ stageIdx, chunks, num: story.allSentences.length + 1 });
+      });
+    });
+    story.solved = new Set();
+    story.current = 0;
+  });
+
+  let activeStoryIdx = 0;
+  const activeStory = () => storiesData[activeStoryIdx];
+
+  function shuffleArr(arr){
+    for(let i = arr.length - 1; i > 0; i--){
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function renderStoryTabs(){
+    const tabs = document.getElementById('storyTabs');
+    tabs.innerHTML = '';
+    storiesData.forEach((story, idx) => {
+      const btn = document.createElement('div');
+      btn.className = 'story-tab-btn';
+      if(idx === activeStoryIdx) btn.classList.add('active');
+      btn.textContent = story.title;
+      btn.addEventListener('click', () => {
+        if(activeStoryIdx === idx) return;
+        if('speechSynthesis' in window){ window.speechSynthesis.cancel(); }
+        activeStoryIdx = idx;
+        renderStoryTabs();
+        renderNav();
+        renderBuildSentence();
+        updateBuildPreview();
+        document.getElementById('buildComplete').classList.remove('show');
+        if(activeStory().solved.size === activeStory().allSentences.length){
+          document.getElementById('buildComplete').classList.add('show');
+        }
+      });
+      tabs.appendChild(btn);
+    });
+  }
+
+  function renderNav(){
+    const story = activeStory();
+    const nav = document.getElementById('sentenceNav');
+    nav.innerHTML = '';
+    story.stages.forEach((stage, stageIdx) => {
+      const group = document.createElement('div');
+      group.className = 'nav-stage';
+      const title = document.createElement('div');
+      title.className = 'nav-stage-title';
+      title.style.color = stage.color;
+      title.textContent = stage.icon + ' ' + stage.name;
+      group.appendChild(title);
+      const numsWrap = document.createElement('div');
+      numsWrap.className = 'nav-numbers';
+      story.allSentences.forEach((s, idx) => {
+        if(s.stageIdx !== stageIdx) return;
+        const btn = document.createElement('div');
+        btn.className = 'nav-num';
+        btn.textContent = s.num;
+        if(idx === story.current) btn.classList.add('active');
+        if(story.solved.has(idx)) btn.classList.add('solved');
+        btn.addEventListener('click', () => {
+          story.current = idx;
+          renderBuildSentence();
+          renderNav();
+        });
+        numsWrap.appendChild(btn);
+      });
+      group.appendChild(numsWrap);
+      nav.appendChild(group);
+    });
+  }
+
+  function renderBuildSentence(){
+    const story = activeStory();
+    const item = story.allSentences[story.current];
+    const stage = story.stages[item.stageIdx];
+    document.getElementById('buildStageLabel').textContent =
+      'Sentence ' + item.num + ' of ' + story.allSentences.length + ' — ' + stage.icon + ' ' + stage.name;
+    const bank = document.getElementById('buildBank');
+    const drop = document.getElementById('buildDrop');
+    bank.innerHTML = '';
+    drop.innerHTML = '';
+    document.getElementById('buildHint').textContent = '';
+    document.getElementById('showAnswerBtn').style.display = 'none';
+    const order = shuffleArr(item.chunks.map((w, i) => i));
+    order.forEach(i => {
+      const el = document.createElement('span');
+      el.className = 'tile';
+      el.textContent = item.chunks[i];
+      bank.appendChild(el);
+    });
+  }
+
+  document.getElementById('tileArea').addEventListener('click', (e) => {
+    const tile = e.target.closest('.tile');
+    if(!tile) return;
+    if(tile.parentElement.id === 'buildBank'){
+      document.getElementById('buildDrop').appendChild(tile);
+    } else if(tile.parentElement.id === 'buildDrop'){
+      document.getElementById('buildBank').appendChild(tile);
+    }
+  });
+
+  function updateBuildPreview(){
+    const story = activeStory();
+    const preview = document.getElementById('buildPreview');
+    preview.innerHTML = '';
+    story.stages.forEach((stage, stageIdx) => {
+      const label = document.createElement('div');
+      label.className = 'preview-stage-label';
+      label.style.color = stage.color;
+      label.textContent = stage.icon + ' ' + stage.name;
+      preview.appendChild(label);
+      story.allSentences.forEach((s, idx) => {
+        if(s.stageIdx !== stageIdx) return;
+        const line = document.createElement('p');
+        line.className = 'preview-sentence';
+        if(story.solved.has(idx)){
+          line.textContent = s.chunks.join(' ');
+        } else {
+          line.classList.add('preview-placeholder');
+          line.textContent = '···· (sentence ' + s.num + ' not yet built)';
+        }
+        preview.appendChild(line);
+      });
+    });
+  }
+
+  document.getElementById('buildCheckBtn').addEventListener('click', () => {
+    const story = activeStory();
+    const item = story.allSentences[story.current];
+    const drop = document.getElementById('buildDrop');
+    const placedTexts = Array.from(drop.children).map(t => t.textContent);
+    const hint = document.getElementById('buildHint');
+
+    const correct = placedTexts.length === item.chunks.length && placedTexts.every((w, i) => w === item.chunks[i]);
+
+    if(correct){
+      hint.style.color = 'var(--green)';
+      hint.textContent = '✓ Great sentence!';
+      document.getElementById('showAnswerBtn').style.display = 'none';
+      story.solved.add(story.current);
+      updateBuildPreview();
+      renderNav();
+      if(story.solved.size === story.allSentences.length){
+        document.getElementById('buildComplete').classList.add('show');
+      } else {
+        setTimeout(() => {
+          let next = story.current;
+          for(let i = 1; i <= story.allSentences.length; i++){
+            const candidate = (story.current + i) % story.allSentences.length;
+            if(!story.solved.has(candidate)){ next = candidate; break; }
+          }
+          story.current = next;
+          renderBuildSentence();
+          renderNav();
+        }, 900);
+      }
+    } else {
+      hint.style.color = 'var(--red)';
+      if(placedTexts.length < item.chunks.length){
+        hint.textContent = `You still need ${item.chunks.length - placedTexts.length} more piece(s).`;
+      } else if(placedTexts.length > item.chunks.length){
+        hint.textContent = 'Too many pieces — tap one to send it back.';
+      } else {
+        const firstWrong = placedTexts.findIndex((w, i) => w !== item.chunks[i]);
+        hint.textContent = `Check piece ${firstWrong + 1} — it's not quite right.`;
+      }
+      document.getElementById('showAnswerBtn').style.display = 'inline-block';
+    }
+  });
+
+  document.getElementById('showAnswerBtn').addEventListener('click', () => {
+    const story = activeStory();
+    const item = story.allSentences[story.current];
+    const bank = document.getElementById('buildBank');
+    const drop = document.getElementById('buildDrop');
+    bank.innerHTML = '';
+    drop.innerHTML = '';
+    const order = shuffleArr(item.chunks.map((w, i) => i));
+    order.forEach(i => {
+      const el = document.createElement('span');
+      el.className = 'tile';
+      el.textContent = item.chunks[i];
+      bank.appendChild(el);
+    });
+    const hint = document.getElementById('buildHint');
+    hint.style.color = 'var(--blue)';
+    hint.innerHTML = 'Correct sentence: <strong>' + item.chunks.join(' ') + '</strong><br>Now arrange the tiles yourself to match it, then check again!';
+    document.getElementById('showAnswerBtn').style.display = 'none';
+  });
+
+  renderStoryTabs();
+  renderNav();
+  renderBuildSentence();
+  updateBuildPreview();
+
+  document.getElementById('listenBtn').addEventListener('click', () => {
+    const story = activeStory();
+    const text = story.allSentences.map(s => s.chunks.join(' ')).join(' ');
+    if('speechSynthesis' in window){
+      window.speechSynthesis.cancel();
+      const utter = new SpeechSynthesisUtterance(text);
+      utter.rate = 0.92;
+      window.speechSynthesis.speak(utter);
+    } else {
+      alert('Sorry, read-aloud is not supported in this browser.');
+    }
+  });
+
+  document.getElementById('stopListenBtn').addEventListener('click', () => {
+    if('speechSynthesis' in window){ window.speechSynthesis.cancel(); }
+  });
+
+  document.getElementById('toMission2BtnFromM4').addEventListener('click', () => goToMission('mission3'));
+
+</script>
+</body>
+</html>
